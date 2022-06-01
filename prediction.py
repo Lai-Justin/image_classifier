@@ -13,16 +13,15 @@ class Dataset(data.Dataset):
         super(Dataset, self).__init__()
 
         self.image_paths = ['/hw4_start_package/hw4_train/']
-        self.image_labels = 
+        #self.image_labels = 
 
 
     def __len(self):
         return self.x.shape[0]
 
-    def __getitem__(self, idx):
+    #def __getitem__(self, idx):
         
 
-print(torch.__version__)
 
 
 
