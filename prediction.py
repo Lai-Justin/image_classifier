@@ -52,7 +52,7 @@ loss_function = nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
 
-epochs = 3
+epochs = 1
 
 
 
@@ -75,14 +75,17 @@ for i in range(epochs):
 
 neural_network.eval()
 
-
+counter = 0
 
 with torch.no_grad():
     with open("predicted.txt",'w') as f:
         pass
     for i in os.listdir('hw4_test'):
-        f = os.path.join('hw4_test', i)
-        temp = Image.open(i)
+        
+        picture = os.path.join('hw4_test', i)
+        temp = Image.open(picture)
+        transform = transforms.Compose([transforms.PILToTensor()])
+        temp = transform(temp)
         output = neural_network(temp)
         _, predicted = torch.max(output.data, 1)
         f.write(output)
