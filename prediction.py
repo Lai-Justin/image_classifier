@@ -1,30 +1,91 @@
 # Starter code for CS 165B HW4
+from http.client import NETWORK_AUTHENTICATION_REQUIRED
 import numpy as np
+import os
+from PIL import Image
 import torch
 import torch.utils.data as data
-from torch import optim
-from torch import nn
+from torch import optim, nn
 from torchvision import datasets, transforms, models
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import ToTensor
 
 
 
-class Dataset(data.Dataset):
-    def __init__(self,x, y):
-        super(Dataset, self).__init__()
 
-        self.image_paths = ['/hw4_start_package/hw4_train/']
-        #self.image_labels = 
+training_data = datasets.ImageFolder('hw4_train', transform = transforms.ToTensor())
+
+batch_size = 4
+
+training_loader = DataLoader(training_data, batch_size, shuffle = True)
+
+#dev = torch.device('cuda' if torch.cuda.is_cuda_available() else 'cpu')
+
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+
+        self.conv1 = nn.Conv2d(3, 32, 3, padding = 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, padding = 1)
+        self.fc1 = nn.Linear(7 * 7 * 64, 1000)
+        self.dropout = nn.Dropout(0.4)
+        self.fc2 = nn.Linear(1000, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = nn.functional.relu(x)
+        x = nn.functional.max_pool2d(x, 2)
+        x = self.conv2(x)
+        x = nn.functional.relu(x)
+        x = nn.functional.max_pool2d(x, 2)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+
+        return x
 
 
-    def __len(self):
-        return self.x.shape[0]
+neural_network = CNN()
 
-    #def __getitem__(self, idx):
+loss_function = nn.CrossEntropyLoss()
+learning_rate = 0.001
+optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
+
+epochs = 3
+
+
+
+neural_network.train()
+for i in range(epochs):
+    current_loss = 0
+    for index, (images, labels) in enumerate(training_loader):
+        optimizer.zero_grad()
         
 
+        out = neural_network(images)
+        loss = loss_function(out, labels)
+        loss.backward()
+        optimizer.step()
+
+        current_loss += loss.item()
+
+    else:
+        print(f"Training loss: {current_loss/len(training_loader)}")
+
+neural_network.eval()
 
 
 
+with torch.no_grad():
+    with open("predicted.txt",'w') as f:
+        pass
+    for i in os.listdir('hw4_test'):
+        f = os.path.join('hw4_test', i)
+        temp = Image.open(i)
+        output = neural_network(temp)
+        _, predicted = torch.max(output.data, 1)
+        f.write(output)
 
 
 
