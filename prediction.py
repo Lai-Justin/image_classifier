@@ -2,7 +2,7 @@
 from http.client import NETWORK_AUTHENTICATION_REQUIRED
 import numpy as np
 import os
-from PIL import Image
+from PIL import Image, ImageFile
 import torch
 import torch.utils.data as data
 from torch import optim, nn
@@ -11,15 +11,13 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import ToTensor
 
 
-
-
 training_data = datasets.ImageFolder('hw4_train', transform = transforms.ToTensor())
 
 batch_size = 4
 
 training_loader = DataLoader(training_data, batch_size, shuffle = True)
 
-#dev = torch.device('cuda' if torch.cuda.is_cuda_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class CNN(nn.Module):
     def __init__(self):
@@ -56,10 +54,15 @@ epochs = 1
 
 
 
+neural_network.to(device)
+
 neural_network.train()
+
 for i in range(epochs):
     current_loss = 0
-    for index, (images, labels) in enumerate(training_loader):
+    
+    for index, (images , labels) in enumerate(training_loader):
+        images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad()
         
 
@@ -75,13 +78,12 @@ for i in range(epochs):
 
 neural_network.eval()
 
-counter = 0
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 with torch.no_grad():
     with open("predicted.txt",'w') as f:
         pass
     for i in os.listdir('hw4_test'):
-        
         picture = os.path.join('hw4_test', i)
         temp = Image.open(picture)
         transform = transforms.Compose([transforms.PILToTensor()])
