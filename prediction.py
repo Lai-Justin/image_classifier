@@ -1,5 +1,4 @@
 # Starter code for CS 165B HW4
-from http.client import NETWORK_AUTHENTICATION_REQUIRED
 import numpy as np
 import os
 from PIL import Image, ImageFile
@@ -13,16 +12,17 @@ from torchvision.transforms import ToTensor
 
 training_data = datasets.ImageFolder('hw4_train', transform = transforms.ToTensor())
 
-batch_size = 4
+batch_size = 8
 
-training_loader = DataLoader(training_data, batch_size, shuffle = True)
+training_loader = DataLoader(training_data, batch_size, shuffle = True, num_workers= 6)
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-    
+
         self.conv1 = nn.Conv2d(3, 32, 3, padding = 1)
         self.conv2 = nn.Conv2d(32, 64, 3, padding = 1)
         self.fc1 = nn.Linear(7 * 7 * 64, 1000)
@@ -45,16 +45,16 @@ class CNN(nn.Module):
 
 
 neural_network = CNN()
-
+neural_network = neural_network.to(device)
 loss_function = nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
 
-epochs = 1
+epochs = 50
 
 
 
-neural_network.to(device)
+
 
 neural_network.train()
 
@@ -89,9 +89,11 @@ with torch.no_grad():
             temp = Image.open(picture).convert('RGB')
             transform = transforms.Compose([transforms.ToTensor()])
             temp = transform(temp)
+            temp = temp.to(device)
             temp = temp.unsqueeze(0)
             output = neural_network(temp)
             _, predicted = torch.max(output.data, 1)
+            predicted = predicted.cpu()
             predicted = predicted.numpy()
             f.write(str(predicted[0]))
             f.write('\n')
