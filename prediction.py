@@ -22,7 +22,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-
+    
         self.conv1 = nn.Conv2d(3, 32, 3, padding = 1)
         self.conv2 = nn.Conv2d(32, 64, 3, padding = 1)
         self.fc1 = nn.Linear(7 * 7 * 64, 1000)
@@ -58,6 +58,7 @@ neural_network.to(device)
 
 neural_network.train()
 
+
 for i in range(epochs):
     current_loss = 0
     
@@ -78,19 +79,22 @@ for i in range(epochs):
 
 neural_network.eval()
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 with torch.no_grad():
-    with open("predicted.txt",'w') as f:
+    with open("prediction.txt",'w') as f:
         pass
-    for i in os.listdir('hw4_test'):
-        picture = os.path.join('hw4_test', i)
-        temp = Image.open(picture)
-        transform = transforms.Compose([transforms.PILToTensor()])
-        temp = transform(temp)
-        output = neural_network(temp)
-        _, predicted = torch.max(output.data, 1)
-        f.write(output)
+        for i in os.listdir('hw4_test'):
+            picture = os.path.join('hw4_test', i)
+            temp = Image.open(picture).convert('RGB')
+            transform = transforms.Compose([transforms.ToTensor()])
+            temp = transform(temp)
+            temp = temp.unsqueeze(0)
+            output = neural_network(temp)
+            _, predicted = torch.max(output.data, 1)
+            predicted = predicted.numpy()
+            f.write(str(predicted[0]))
+            f.write('\n')
 
 
 
