@@ -18,7 +18,9 @@ training_set, validation_set = data.random_split(training_data, [25200, 25200])
 
 training_loader = DataLoader(training_set, batch_size = 32, shuffle = True)
 
+
 validation_loader = DataLoader(validation_set, batch_size = 32, shuffle = True)
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -54,7 +56,7 @@ loss_function = nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
 
-epochs = 25
+epochs = 5
 
 
 
@@ -106,7 +108,7 @@ with torch.no_grad():
 with torch.no_grad():
     with open("prediction.txt",'w') as f:
         pass
-        for i in os.listdir('hw4_test'):
+        for i in sorted(os.listdir('hw4_test')):
             picture = os.path.join('hw4_test', i)
             temp = Image.open(picture).convert('RGB')
             transform = transforms.Compose([transforms.ToTensor()])
