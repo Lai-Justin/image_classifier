@@ -12,9 +12,13 @@ from torchvision.transforms import ToTensor
 
 training_data = datasets.ImageFolder('hw4_train', transform = transforms.ToTensor())
 
-batch_size = 8
+training_set, validation_set = data.random_split(training_data, [25200, 25200])
 
-training_loader = DataLoader(training_data, batch_size, shuffle = True, num_workers= 6)
+
+
+training_loader = DataLoader(training_set, batch_size = 32, shuffle = True)
+
+validation_loader = DataLoader(validation_set, batch_size = 32, shuffle = True)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,9 +27,9 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 32, 3, padding = 1)
-        self.conv2 = nn.Conv2d(32, 64, 3, padding = 1)
-        self.fc1 = nn.Linear(7 * 7 * 64, 1000)
+        self.conv1 = nn.Conv2d(3, 64, 3, padding = 1)
+        self.conv2 = nn.Conv2d(64, 128, 3, padding = 1)
+        self.fc1 = nn.Linear(7 * 7 * 128, 1000)
         self.dropout = nn.Dropout(0.4)
         self.fc2 = nn.Linear(1000, 10)
 
@@ -50,7 +54,7 @@ loss_function = nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
 
-epochs = 50
+epochs = 25
 
 
 
@@ -79,8 +83,26 @@ for i in range(epochs):
 
 neural_network.eval()
 
+    #validation
+with torch.no_grad():
+    correct = 0
+    error = 0
+    valid_loss = 0
+    for images, labels in validation_loader:
+        images, labels = images.to(device), labels.to(device)
+        predicted = neural_network(images)
+        valid_loss += loss_function(predicted, labels).item()
+        correct += (predicted.argmax(1) == labels).type(torch.float).sum().item()
+        
+        
+    
+
+    print(correct / len(validation_loader.dataset))
 
 
+
+
+#testing
 with torch.no_grad():
     with open("prediction.txt",'w') as f:
         pass
