@@ -1,6 +1,7 @@
 # Starter code for CS 165B HW4
 import numpy as np
 import os
+import re
 from PIL import Image, ImageFile
 import torch
 import torch.utils.data as data
@@ -12,7 +13,7 @@ from torchvision.transforms import ToTensor
 
 training_data = datasets.ImageFolder('hw4_train', transform = transforms.ToTensor())
 
-training_set, validation_set = data.random_split(training_data, [25200, 25200])
+training_set, validation_set = data.random_split(training_data, [40320, 10080])
 
 
 
@@ -29,11 +30,11 @@ class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 64, 3, padding = 1)
-        self.conv2 = nn.Conv2d(64, 128, 3, padding = 1)
-        self.fc1 = nn.Linear(7 * 7 * 128, 1000)
+        self.conv1 = nn.Conv2d(3, 128, 3, padding = 1)
+        self.conv2 = nn.Conv2d(128, 256, 3, padding = 1)
+        self.fc1 = nn.Linear(7 * 7 * 256, 10000)
         self.dropout = nn.Dropout(0.4)
-        self.fc2 = nn.Linear(1000, 10)
+        self.fc2 = nn.Linear(10000, 10)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -56,7 +57,7 @@ loss_function = nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = optim.SGD(neural_network.parameters(), lr = learning_rate)
 
-epochs = 5
+epochs = 50
 
 
 
@@ -102,13 +103,11 @@ with torch.no_grad():
     print(correct / len(validation_loader.dataset))
 
 
-
-
 #testing
 with torch.no_grad():
     with open("prediction.txt",'w') as f:
         pass
-        for i in sorted(os.listdir('hw4_test')):
+        for i in sorted(os.listdir('hw4_test'), key = len):
             picture = os.path.join('hw4_test', i)
             temp = Image.open(picture).convert('RGB')
             transform = transforms.Compose([transforms.ToTensor()])
