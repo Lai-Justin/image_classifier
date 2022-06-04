@@ -1,4 +1,4 @@
-# Starter code for CS 165B HW4
+import sys
 import numpy as np
 import os
 import re
@@ -18,8 +18,7 @@ training_loader = 0
 validation_loader = 0
 neural_network = 0
 
-
-#loads the  data from the training set, splits the training set into a training_loader and validation_loader. 80/20 in the data
+# loads the  data from the training set, splits the training set into a training_loader and validation_loader. 80/20 in the data
 def load_data(training_dataset, batch_size):
     global training_loader
     global validation_loader
@@ -54,7 +53,7 @@ class CNN(nn.Module):
         return x
     
 
-#trains the neural network
+# trains the neural network
 def training(epochs, learning_rate, loss_function):
     global neural_network
     neural_network = CNN().to(device)
@@ -75,7 +74,7 @@ def training(epochs, learning_rate, loss_function):
         else:
             print(f"Training loss: {current_loss/len(training_loader)}")
 
-#validation
+# validation
 def validation(loss_function):
     neural_network.eval()
     with torch.no_grad():
@@ -91,7 +90,7 @@ def validation(loss_function):
         print(correct / len(validation_loader.dataset))
 
 
-#testing, prints the results of the testing data into a txt file
+# testing, prints the results of the testing data into a txt file
 def testing(testing_file):
     with torch.no_grad():
         with open("prediction.txt",'w') as f:
@@ -110,9 +109,13 @@ def testing(testing_file):
                 f.write(str(predicted[0]))
                 f.write('\n')
 
+def run_program():
+    if len(sys.argv) != 2:
+        print("Missing epoch value. Please input an epoch value in the command line")
+        sys.exit(1)
+    load_data('training_set', 32)
+    training(int(float(sys.argv[1])), 0.001, nn.CrossEntropyLoss())
+    validation(nn.CrossEntropyLoss())
+    testing('testing_set')
 
-
-load_data('training_set', 32)
-training(50, 0.001, nn.CrossEntropyLoss())
-validation(nn.CrossEntropyLoss())
-testing('testing_set')
+run_program()
