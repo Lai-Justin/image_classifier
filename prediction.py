@@ -1,4 +1,3 @@
-# Starter code for CS 165B HW4
 import numpy as np
 import os
 import re
